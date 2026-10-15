@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NeoTube V3</title>
+<style>
+:root{--red:#ff0033;--bg:#0f0f0f;--card:#1b1b1b;--line:#303030;--txt:#fff;--muted:#aaa}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:15px Arial,sans-serif}
+header{height:65px;display:flex;align-items:center;gap:12px;padding:0 20px;background:#151515;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.logo{font-size:23px;font-weight:bold;white-space:nowrap}.logo span{background:var(--red);padding:5px 9px;border-radius:8px;margin-right:7px}
+button{cursor:pointer;border:0;border-radius:8px;padding:10px 14px;font-weight:bold}
+.primary{background:var(--red);color:white}.secondary{background:#333;color:white}
+.search{display:flex;flex:1;max-width:550px;margin:auto}
+input,textarea{background:#101010;color:white;border:1px solid #444;padding:12px;border-radius:8px;width:100%;font:inherit}
+.search button{border-radius:0 20px 20px 0;background:#333;color:white}
+.search input{border-radius:20px 0 0 20px}
+.layout{display:grid;grid-template-columns:205px 1fr;min-height:calc(100vh - 65px)}
+aside{padding:15px 10px;border-right:1px solid var(--line)}
+nav button{display:block;width:100%;text-align:left;background:transparent;color:white;margin-bottom:5px;font-size:15px}
+nav button:hover,nav button.active{background:#303030}
+main{padding:24px;max-width:1400px;width:100%;margin:auto}
+.hero{padding:25px;border-radius:16px;background:linear-gradient(120deg,#601022,#191919);margin-bottom:25px}
+.hero h1{font-size:32px;margin:0 0 10px}.muted{color:var(--muted)}
+h2{font-size:22px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.video{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden}
+.thumb{aspect-ratio:16/9;background:linear-gradient(135deg,#292929,#701329);display:grid;place-items:center;font-size:45px}
+.vbody{padding:13px}.vbody h3{margin:0 0 8px;font-size:17px}
+.vbody p{color:var(--muted);font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:20px;margin-bottom:18px}
+.field{margin:16px 0}.field label{display:block;margin-bottom:7px;font-weight:bold}
+textarea{min-height:90px;resize:vertical}
+.hidden{display:none!important}
+.avatar{width:78px;height:78px;border-radius:50%;background:#444;display:grid;place-items:center;font-size:34px;overflow:hidden;flex-shrink:0}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.profile{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.banner{height:130px;background:linear-gradient(110deg,#7b1028,#fa3156,#291015);border-radius:13px;margin-bottom:15px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
+.stat{padding:15px;background:#252525;border-radius:10px}.stat b{display:block;font-size:24px}.stat span{font-size:13px;color:var(--muted)}
+.notice{border:1px dashed #555;padding:25px;text-align:center;border-radius:12px;color:var(--muted)}
+.comment{padding:12px 0;border-bottom:1px solid var(--line)}
+footer{text-align:center;color:#777;padding:30px 5px;font-size:12px}
+@media(max-width:850px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{grid-template-columns:75px 1fr}nav button{text-align:center;padding:12px 3px;font-size:12px}nav button span{display:block;font-size:20px;margin-bottom:5px}}
+@media(max-width:560px){header{padding:0 10px;height:58px}.logo{font-size:17px}.search{display:none}header>.primary{margin-left:auto;padding:9px;font-size:12px}.layout{display:block}aside{position:fixed;bottom:0;left:0;right:0;height:62px;background:#151515;z-index:8;padding:4px;border-right:0;border-top:1px solid var(--line)}nav{display:flex;justify-content:space-around}nav button{flex:1;margin:0;padding:5px 0;font-size:10px}main{padding:15px 12px 80px}.grid{grid-template-columns:1fr}.hero h1{font-size:26px}.stats{gap:6px}.stat{padding:10px 7px}.stat b{font-size:20px}.stat span{font-size:11px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span>▶</span>NeoTube <small style="color:#ff526f;font-size:11px">V3</small></div>
+  <div class="search">
+    <input id="search" placeholder="Rechercher une vidéo...">
+    <button onclick="searchVideos()">⌕</button>
+  </div>
+  <button class="primary" onclick="openPage('create')">＋ Ma chaîne</button>
+</header>
+
+<div class="layout">
+<aside>
+<nav>
+<button class="active" data-page="home" onclick="openPage('home')"><span>⌂</span>Accueil</button>
+<button data-page="trending" onclick="openPage('trending')"><span>🔥</span>Tendances</button>
+<button data-page="channel" onclick="openPage('channel')"><span>👤</span>Ma chaîne</button>
+<button data-page="studio" onclick="openPage('studio')"><span>🎬</span>Studio</button>
+<button data-page="upload" onclick="openPage('upload')"><span>＋</span>Publier</button>
+<button data-page="live" onclick="openPage('live')"><span>🔴</span>Live</button>
+</nav>
+</aside>
+
+<main>
+<section id="home">
+<div class="hero">
+<h1>Bienvenue sur NeoTube 🚀</h1>
+<p>Découvre des vidéos et crée ta propre chaîne gratuitement, sans te connecter !</p>
+<button class="primary" onclick="openPage('create')">Créer ma chaîne</button>
+</div>
+<h2>Vidéos à découvrir</h2>
+<div id="homeVideos" class="grid"></div>
+</section>
+
+<section id="trending" class="hidden">
+<h2>🔥 Tendances NeoTube</h2>
+<p class="muted">Découvre les vidéos de démonstration.</p>
+<div id="trendVideos" class="grid"></div>
+</section>
+
+<section id="create" class="hidden">
+<div class="panel">
+<h1 id="formTitle">Créer ma chaîne ✨</h1>
+<p class="muted">Aucun compte ni mot de passe nécessaire.</p>
+<form id="channelForm">
+<div class="field"><label for="channelName">Nom de la chaîne *</label><input id="channelName" maxlength="40" required placeholder="Ex. Neural Gaming"></div>
+<div class="field"><label for="handle">Pseudo *</label><input id="handle" maxlength="24" required placeholder="Ex. NeuralBG"></div>
+<div class="field"><label for="description">Description</label><textarea id="description" maxlength="300" placeholder="Présente ta chaîne..."></textarea></div>
+<div class="field"><label for="avatarFile">Photo de profil (facultatif)</label><input id="avatarFile" type="file" accept="image/*"><div id="avatarPreview" class="avatar" style="margin-top:10px">👤</div></div>
+<button class="primary" type="submit">Enregistrer ma chaîne</button>
+</form>
+</div>
+</section>
+
+<section id="channel" class="hidden">
+<div id="noChannel" class="notice">
+<h2>🎬 Crée ta chaîne !</h2>
+<p>Personnalise ton profil et prépare tes vidéos.</p>
+<button class="primary" onclick="openPage('create')">Créer ma chaîne</button>
+</div>
+<div id="channelContent" class="hidden">
+<div class="banner"></div>
+<div class="panel">
+<div class="profile"><div id="profileAvatar" class="avatar">👤</div><div><h1 id="profileName"></h1><p id="profileHandle" class="muted"></p></div><button class="secondary" onclick="editChannel()">Modifier</button></div>
+<p id="profileDescription" class="muted"></p>
+</div>
+<div class="stats">
+<div class="stat"><b id="channelVideoCount">0</b><span>Vidéos</span></div>
+<div class="stat"><b>0</b><span>Abonnés</span></div>
+<div class="stat"><b id="channelLikes">0</b><span>Likes reçus</span></div>
+</div>
+<h2>Mes vidéos</h2>
+<div id="myVideos" class="grid"></div>
+</div>
+</section>
+
+<section id="studio" class="hidden">
+<h1>🎬 Studio créateur</h1>
+<div id="studioMissing" class="notice">
+<p>Crée ta chaîne pour accéder au studio.</p>
+<button class="primary" onclick="openPage('create')">Créer ma chaîne</button>
+</div>
+<div id="studioContent" class="hidden">
+<div class="panel"><h2 id="studioWelcome"></h2><p class="muted">Gère ta chaîne et tes vidéos.</p>
+<div class="stats">
+<div class="stat"><b id="studioCount">0</b><span>Vidéos</span></div>
+<div class="stat"><b>0</b><span>Abonnés</span></div>
+<div class="stat"><b id="studioLikes">0</b><span>Likes</span></div>
+</div>
+<button class="primary" onclick="openPage('upload')">＋ Ajouter une vidéo</button>
+<button class="secondary" onclick="editChannel()">Modifier ma chaîne</button>
+<button class="secondary" onclick="resetData()">Réinitialiser</button>
+</div>
+<div id="studioList"></div>
+</div>
+</section>
+
+<section id="upload" class="hidden">
+<div class="panel">
+<h1>＋ Ajouter une vidéo</h1>
+<p class="muted">Cette version enregistre une fiche vidéo. Elle ne téléverse pas de vrai fichier sur Internet.</p>
+<form id="videoForm">
+<div class="field"><label for="videoTitle">Titre *</label><input id="videoTitle" required maxlength="100" placeholder="Ma nouvelle vidéo"></div>
+<div class="field"><label for="videoDescription">Description</label><textarea id="videoDescription" maxlength="500" placeholder="Description de la vidéo..."></textarea></div>
+<div class="field"><label for="videoFile">Fichier vidéo (facultatif)</label><input type="file" id="videoFile" accept="video/*"><small class="muted">Le fichier reste sur ton appareil.</small></div>
+<button class="primary" type="submit">Ajouter à ma chaîne</button>
+</form>
+</div>
+</section>
+
+<section id="live" class="hidden">
+<div class="panel">
+<h1>🔴 NeoTube Live</h1>
+<p>Prépare tes futurs lives ici !</p>
+<div class="notice"><h2>📡 Diffusion en direct</h2><p>Le système de streaming n'est pas encore connecté à un serveur.</p><p class="muted">Cette page est une maquette : aucun live réel n'est diffusé.</p></div>
+</div>
+</section>
+
+<section id="watch" class="hidden">
+<button class="secondary" onclick="openPage('home')">← Retour</button>
+<div class="panel" style="margin-top:15px">
+<div id="watchThumb" class="thumb">▶</div>
+<h1 id="watchTitle"></h1><p id="watchChannel" class="muted"></p>
+<div class="actions"><button class="secondary" id="watchLike">♥ J'aime</button></div>
+<p id="watchDescription"></p>
+<hr style="border-color:#333">
+<h2>Commentaires</h2>
+<div id="comments"></div>
+<form id="commentForm"><div class="field"><label for="commentText">Écrire un commentaire</label><input id="commentText" required maxlength="250" placeholder="Ton commentaire..."></div><button class="primary">Commenter</button></form>
+</div>
+</section>
+
+<footer>NeoTube V3 · Prototype indépendant · Interface de démonstration</footer>
+</main>
+</div>
+
+<script>
+const KEY="neotube-v3";
+const demos=[
+ {id:"d1",title:"Je tente un défi impossible 🎮",channel:"NeoTube Gaming",description:"Une vidéo de démonstration gaming.",emoji:"🎮",likes:12,comments:[]},
+ {id:"d2",title:"5 astuces à connaître ⚡",channel:"Les Astuces",description:"Quelques astuces en démonstration.",emoji:"⚡",likes:8,comments:[]},
+ {id:"d3",title:"Une aventure incroyable 🌌",channel:"Studio Nova",description:"Bienvenue dans cette aventure.",emoji:"🌌",likes:5,comments:[]},
+ {id:"d4",title:"Ce secret que tu ignores 👀",channel:"Curieux+",description:"Une vidéo de démonstration.",emoji:"👀",likes:4,comments:[]},
+ {id:"d5",title:"Le meilleur challenge 🏆",channel:"Team Pixel",description:"On relève le défi.",emoji:"🏆",likes:7,comments:[]},
+ {id:"d6",title:"Montage du jour 🔥",channel:"Clip Factory",description:"Un clip de démonstration.",emoji:"🔥",likes:3,comments:[]}
+];
+let data=load(),avatarData="",watchId=null,editing=false;
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{channel:null,videos:[]}}catch(e){return {channel:null,videos:[]}}}
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function esc(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function allVideos(){return [...data.videos,...demos]}
+function openPage(id){
+ document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));
+ document.getElementById(id).classList.remove("hidden");
+ document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+ render();window.scrollTo(0,0);
+}
+function card(v){return `<article class="video"><div class="thumb" onclick="watchVideo('${v.id}')">${esc(v.emoji||"▶")}</div><div class="vbody"><h3>${esc(v.title)}</h3><p>${esc(v.channel||data.channel?.name||"NeoTube")} · ${v.likes||0} likes</p><div class="actions"><button class="secondary" onclick="watchVideo('${v.id}')">▶ Voir</button><button class="secondary" onclick="like('${v.id}')">♥ ${v.likes||0}</button></div></div></article>`}
+function render(){
+ const all=allVideos();
+ document.getElementById("homeVideos").innerHTML=all.map(card).join("");
+ document.getElementById("trendVideos").innerHTML=[...all].sort((a,b)=>(b.likes||0)-(a.likes||0)).map(card).join("");
+ const c=data.channel;
+ document.getElementById("noChannel").classList.toggle("hidden",!!c);
+ document.getElementById("channelContent").classList.toggle("hidden",!c);
+ document.getElementById("studioMissing").classList.toggle("hidden",!!c);
+ document.getElementById("studioContent").classList.toggle("hidden",!c);
+ if(c){
+  document.getElementById("profileName").textContent=c.name;
+  document.getElementById("profileHandle").textContent="@"+c.handle+" · 0 abonné";
+  document.getElementById("profileDescription").textContent=c.description||"Bienvenue sur ma chaîne NeoTube !";
+  document.getElementById("studioWelcome").textContent="Bienvenue, "+c.name+" !";
+  document.getElementById("profileAvatar").innerHTML=c.avatar?`<img src="${c.avatar}" alt="Photo de profil">`:"👤";
+  document.getElementById("channelVideoCount").textContent=data.videos.length;
+  document.getElementById("studioCount").textContent=data.videos.length;
+  let likes=data.videos.reduce((n,v)=>n+(v.likes||0),0);
+  document.getElementById("channelLikes").textContent=likes;
+  document.getElementById("studioLikes").textContent=likes;
+  document.getElementById("myVideos").innerHTML=data.videos.length?data.videos.map(card).join(""):'<div class="notice">Tu n’as pas encore publié de fiche vidéo.</div>';
+  document.getElementById("studioList").innerHTML=data.videos.map(v=>`<div class="panel"><b>${esc(v.title)}</b><p class="muted">${v.likes||0} likes</p><button class="secondary" onclick="deleteVideo('${v.id}')">Supprimer</button></div>`).join("");
+ }
+}
+function editChannel(){
+ if(!data.channel)return;
+ const c=data.channel;editing=true;
+ document.getElementById("formTitle").textContent="Modifier ma chaîne";
+ document.getElementById("channelName").value=c.name;
+ document.getElementById("handle").value=c.handle;
+ document.getElementById("description").value=c.description||"";
+ avatarData=c.avatar||"";
+ document.getElementById("avatarPreview").innerHTML=avatarData?`<img src="${avatarData}" alt="Aperçu">`:"👤";
+ openPage("create");
+}
+document.getElementById("avatarFile").addEventListener("change",e=>{
+ const f=e.target.files[0];if(!f)return;
+ if(f.size>700000){alert("Choisis une image de moins de 700 Ko.");e.target.value="";return}
+ const r=new FileReader();r.onload=()=>{avatarData=r.result;document.getElementById("avatarPreview").innerHTML=`<img src="${avatarData}" alt="Aperçu">`};r.readAsDataURL(f);
+});
+document.getElementById("channelForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ const name=document.getElementById("channelName").value.trim();
+ const handle=document.getElementById("handle").value.trim().replace(/^@/,"").replace(/\s/g,"");
+ if(!/^[a-zA-Z0-9_]{2,24}$/.test(handle)){alert("Le pseudo doit contenir 2 à 24 lettres, chiffres ou _.");return}
+ data.channel={name,handle,description:document.getElementById("description").value.trim(),avatar:avatarData||(data.channel?.avatar||"")};
+ save();editing=false;avatarData="";e.target.reset();
+ document.getElementById("formTitle").textContent="Créer ma chaîne ✨";
+ openPage("channel");alert("Ta chaîne est enregistrée sur cet appareil ! 🎉");
+});
+document.getElementById("videoForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ if(!data.channel){alert("Crée d’abord ta chaîne.");openPage("create");return}
+ const f=document.getElementById("videoFile").files[0];
+ data.videos.unshift({id:"v"+Date.now(),title:document.getElementById("videoTitle").value.trim(),description:document.getElementById("videoDescription").value.trim(),channel:data.channel.name,emoji:"▶",likes:0,comments:[],filename:f?.name||""});
+ save();e.target.reset();openPage("studio");alert("Fiche vidéo ajoutée ! Le fichier vidéo lui-même n’a pas été envoyé sur Internet.");
+});
+function like(id){
+ const v=allVideos().find(x=>x.id===id);if(!v)return;
+ v.likes=(v.likes||0)+1;save();render();
+}
+function deleteVideo(id){data.videos=data.videos.filter(v=>v.id!==id);save();render()}
+function watchVideo(id){
+ watchId=id;const v=allVideos().find(x=>x.id===id);if(!v)return;
+ document.getElementById("watchTitle").textContent=v.title;
+ document.getElementById("watchChannel").textContent=v.channel||"NeoTube";
+ document.getElementById("watchDescription").textContent=v.description||"";
+ document.getElementById("watchThumb").textContent=v.emoji||"▶";
+ document.getElementById("watchLike").textContent="♥ J’aime ("+(v.likes||0)+")";
+ document.getElementById("watchLike").onclick=()=>{like(id);watchVideo(id)};
+ showComments(v);openPage("watch");
+}
+function showComments(v){
+ document.getElementById("comments").innerHTML=(v.comments||[]).length?v.comments.map(c=>`<div class="comment"><b>${esc(c.name)}</b><p>${esc(c.text)}</p></div>`).join(""):'<p class="muted">Aucun commentaire pour le moment.</p>';
+}
+document.getElementById("commentForm").addEventListener("submit",e=>{
+ e.preventDefault();const v=allVideos().find(x=>x.id===watchId);if(!v)return;
+ v.comments=v.comments||[];v.comments.push({name:data.channel?.name||"Visiteur",text:document.getElementById("commentText").value.trim()});
+ save();document.getElementById("commentText").value="";showComments(v);
+});
+function searchVideos(){
+ const q=document.getElementById("search").value.trim().toLowerCase();
+ openPage("home");
+ const results=allVideos().filter(v=>(v.title+" "+v.channel).toLowerCase().includes(q));
+ document.getElementById("homeVideos").innerHTML=q?results.map(card).join(""):allVideos().map(card).join("");
+ if(q&&!results.length)document.getElementById("homeVideos").innerHTML='<div class="notice">Aucun résultat trouvé.</div>';
+}
+document.getElementById("search").addEventListener("keydown",e=>{if(e.key==="Enter")searchVideos()});
+function resetData(){if(confirm("Supprimer ta chaîne et tes fiches vidéo de ce navigateur ?")){data={channel:null,videos:[]};save();openPage("home")}}
+render();
+</script>
+</body>
+  </html>
